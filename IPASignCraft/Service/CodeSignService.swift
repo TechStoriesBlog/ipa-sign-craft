@@ -9,7 +9,6 @@ import Foundation
 
 
 struct CodeSignService {
-    
     func resignIPA(
         ipaURL: URL,
         profileURL: URL,
@@ -20,48 +19,65 @@ struct CodeSignService {
         
         progress?(.preparing)
         // 1. Create temp workspace
-        let workspace = try createWorkspace()
-       
+        let workspace = try await BlockingExecutor.run {
+             try createWorkspace()
+        }
+        
         // 2. Extract IPA
         progress?(.extracting)
-        let appURL = try IPAExtractorService.extractIPA(at: ipaURL, to: workspace)
+        let appURL = try await BlockingExecutor.run {
+            try IPAExtractorService.extractIPA(at: ipaURL, to: workspace)
+        }
         
         // 3. Apply advanced options
         var entitlementsURL: URL?
         if options.modifyPlist || options.modifyEntitlements {
             progress?(.extracting)
-            entitlementsURL = try applyAdvancedOptions(options, to: appURL, workspace: workspace)
+            entitlementsURL = try await BlockingExecutor.run {
+                try applyAdvancedOptions(options, to: appURL, workspace: workspace)
+            }
         }
        
         
         // 4. Inject provisioning profile
         progress?(.embeddingProfile)
         let destination = appURL.appendingPathComponent("embedded.mobileprovision")
-        try FileManager.default.copyWithOverwrite(from: profileURL, to: destination)
+        try await BlockingExecutor.run {
+            try FileManager.default.copyWithOverwrite(from: profileURL, to: destination)
+        }
         
         // 5. Remove old signatures
         progress?(.removeOldSign)
-        try removeOldSignatures(at: appURL)
+        try await BlockingExecutor.run {
+            try removeOldSignatures(at: appURL)
+        }
         
         // 6. Resolve certificate identity
         progress?(.applyingCert)
-        let certIdentity = try resolveCertificateIdentity(certificate)
+        let certIdentity =  try await BlockingExecutor.run {
+            try resolveCertificateIdentity(certificate)
+        }
         
         // 7. Sign app bundle
         progress?(.signing)
-        try signAppBundle(
-            appURL: appURL,
-            certificate: certIdentity,
-            entitlementsURL: entitlementsURL
-        )
+        try await BlockingExecutor.run {
+            try signAppBundle(
+                appURL: appURL,
+                certificate: certIdentity,
+                entitlementsURL: entitlementsURL
+            )
+        }
         
         // 8. Repack IPA
         progress?(.repackaging)
         let outputIPA = workspace.appendingPathComponent("resigned.ipa")
-        try ShellExecutor.run("""
+        try await BlockingExecutor.run {
+            try ShellExecutor.run("""
         cd "\(workspace.path)" && zip -qry "\(outputIPA.lastPathComponent)" Payload
         """)
+        }
         
+        progress?(.completed)
         return outputIPA
     }
 }

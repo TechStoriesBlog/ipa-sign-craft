@@ -156,7 +156,8 @@ extension SigningStep {
             .removeOldSign,
             .applyingCert,
             .signing,
-            .repackaging
+            .repackaging,
+            .completed
         ]
     }
 

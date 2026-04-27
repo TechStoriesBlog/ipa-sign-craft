@@ -519,7 +519,7 @@ fileprivate extension HomeView {
             VStack(alignment: .leading, spacing: 14) {
                 
                 // Progress bar driven by step index
-                ProgressView(value: viewModel.state.progress)
+                ProgressView(value: viewModel.state.progress).tint(AppColors.accent)
                 ForEach(SigningStep.progressSteps, id: \.self) { step in
                     statusRow(for: step)
                 }
@@ -528,30 +528,51 @@ fileprivate extension HomeView {
     }
     
     func statusRow(for step: SigningStep) -> some View {
-        let isCurrent = step == viewModel.state.currentStep
-        let isDone = viewModel.state.isStepCompleted(step)
+        let isCompletedState = viewModel.state.currentStep == .completed
+        let isCurrent = (step == viewModel.state.currentStep)
+        let isDone = viewModel.state.isStepCompleted(step) || (isCompletedState && step != .completed)
 
         return HStack {
-            Image(systemName: iconName(isCurrent: isCurrent, done: isDone))
-                .foregroundColor(iconColor(isCurrent: isCurrent, done: isDone))
+            Image(systemName: iconName(step: step, isCurrent: isCurrent, done: isDone))
+                .foregroundColor(iconColor(step: step, isCurrent: isCurrent, done: isDone))
 
             Text(step.title)
                 .font(.caption)
-                .fontWeight(isCurrent ? .semibold : .regular)
+                .fontWeight((isCurrent || (isCompletedState && step == .completed)) ? .semibold : .regular)
 
             Spacer()
         }
     }
     
-    func iconName(isCurrent: Bool, done: Bool) -> String {
-        if done { return "checkmark.circle.fill" }
-        if isCurrent { return "circle.fill" }
+    func iconName(step: SigningStep, isCurrent: Bool, done: Bool) -> String {
+        if step == .completed && isCurrent {
+            return "checkmark.seal.fill"
+        }
+
+        if isCurrent {
+            return "arrow.triangle.2.circlepath.circle.fill"
+        }
+
+        if done {
+            return "checkmark.circle.fill"
+        }
+
         return "circle"
     }
 
-    func iconColor(isCurrent: Bool, done: Bool) -> Color {
-        if done { return .green }
-        if isCurrent { return .blue }
+    func iconColor(step: SigningStep, isCurrent: Bool, done: Bool) -> Color {
+        if step == .completed && isCurrent {
+            return AppColors.accent
+        }
+
+        if isCurrent {
+            return AppColors.accentHover
+        }
+
+        if done {
+            return AppColors.accent
+        }
+
         return .gray
     }
 }

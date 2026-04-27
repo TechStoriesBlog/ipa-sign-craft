@@ -21,9 +21,7 @@ class HomeViewModel: ObservableObject {
     }
 
     private func loadCertificates() async {
-
         state.isLoading = true
-
         do {
             let certs = try KeychainService.fetchCertificates()
 
@@ -173,15 +171,15 @@ class HomeViewModel: ObservableObject {
                     }
                 }
 
-                await MainActor.run {
-                    self.state.isSigning = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                     self.state.log += "Finished\nOutput: \(result)\n"
                     self.saveIPA(at: result)
+                    self.resetState()
                 }
 
             } catch {
                 await MainActor.run {
-                    self.state.isSigning = false
+                    self.resetState()
                     self.state.log += "Error: \(error.localizedDescription)\n"
                 }
             }
@@ -231,3 +229,10 @@ fileprivate extension HomeViewModel {
     }
 }
 
+//MARK: - State Handling
+fileprivate extension HomeViewModel {
+    func resetState() {
+        self.state.isSigning = false
+        self.state.currentStep = .idle
+    }
+}
