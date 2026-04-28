@@ -15,7 +15,6 @@ struct SigningOptions {
     var newBundleID: String
     
     /// Info.plist modifications
-    var modifyPlist: Bool
     var plistEntries: [PlistKeyValue]
     
     /// Entitlement modifications

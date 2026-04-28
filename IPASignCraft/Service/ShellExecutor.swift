@@ -8,11 +8,10 @@
 import Foundation
 
 struct ShellExecutor {
-
-    // Simple fire-and-forget (your existing use case)
+    
     static func run(_ command: String) throws {
         let result = try runWithOutput(command)
-
+        
         if result.status != 0 {
             throw NSError(
                 domain: "ShellError",
@@ -21,25 +20,30 @@ struct ShellExecutor {
             )
         }
     }
-
-    // Full control (used by KeychainService)
+    
     static func runWithOutput(_ command: String) throws -> ShellResult {
-
         let process = Process()
         let pipe = Pipe()
-
-        process.launchPath = "/bin/bash"
-        process.arguments = ["-c", command]
-
+        
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+        process.arguments = ["bash", "-c", command]
+        
+        var env = ProcessInfo.processInfo.environment
+        env["HOME"] = NSHomeDirectoryForUser(NSUserName()) ?? env["HOME"]
+        env["USER"] = NSUserName()
+        env["LOGNAME"] = NSUserName()
+        env["PATH"] = "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"
+        
+        process.environment = env
         process.standardOutput = pipe
         process.standardError = pipe
-
-        process.launch()
+        
+        try process.run()
         process.waitUntilExit()
-
+        
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         let output = String(data: data, encoding: .utf8) ?? ""
-
+        
         return ShellResult(
             output: output,
             status: process.terminationStatus

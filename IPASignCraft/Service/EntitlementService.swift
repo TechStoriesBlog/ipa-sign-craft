@@ -7,65 +7,97 @@
 
 import Foundation
 
+import Foundation
+
 struct EntitlementService {
     
+    /// Generates final signing entitlements using:
+    /// 1. Provisioning profile as authoritative base
+    /// 2. Existing app entitlements as optional feature supplement
+    /// 3. User custom updates as final override
     static func prepareEntitlements(
         appURL: URL,
+        profileURL: URL,
         updates: [EntitlementEntry],
         outputDir: URL
     ) throws -> URL {
         
-        // 1. Extract existing
-        let existingRaw = try self.extractRaw(from: appURL.path)
+        // Step 1: Extract entitlements from provisioning profile (authoritative signing truth)
+        let profileRaw = try extractProfileEntitlements(from: profileURL)
         
-        // 2. Convert to model
-        let existing = convertToModel(existingRaw)
+        // Step 2: Extract entitlements from original app (feature supplement only)
+        let appRaw = try extractAppEntitlements(from: appURL)
         
-        // 3. Convert updates
-        let updateDict = Dictionary(uniqueKeysWithValues: updates.map {
-            ($0.key, $0.value)
-        })
+        // Step 3: Convert to typed model
+        let profileBase = convertToModel(profileRaw)
+        let appExisting = convertToModel(appRaw)
         
-        // 4. Merge
-        let merged = merge(base: existing, updates: updateDict)
-    
-        // 5. Convert back to plist format
-        let final = merged.mapValues { $0.toAny() }
+        // Step 4: Merge safe app entitlements into provisioning base
+        var merged = mergeSafeAppEntitlements(
+            profileBase: profileBase,
+            appExisting: appExisting
+        )
         
-        // 6. Write
-        let entitlementsURL = outputDir.appendingPathComponent("entitlements.plist")
-        try write(final, to: entitlementsURL.path)
+        // Step 5: Apply user manual updates last
+        let updateDict = Dictionary(uniqueKeysWithValues: updates.map { ($0.key, $0.value) })
+        merged = mergeUserUpdates(base: merged, updates: updateDict)
+        
+        // Step 6: Convert back to plist and write
+        let finalPlist = merged.mapValues { $0.toAny() }
+        let entitlementsURL = outputDir.appendingPathComponent("final_entitlements.plist")
+        
+        try write(finalPlist, to: entitlementsURL)
         
         return entitlementsURL
     }
 }
 
 private extension EntitlementService {
-    static func extractRaw(from appPath: String) throws -> [String: Any] {
+    
+    /// Extracts entitlements directly from provisioning profile.
+    static func extractProfileEntitlements(from profileURL: URL) throws -> [String: Any] {
         
-        let result = try ShellExecutor.runWithOutput("""
-        /usr/bin/codesign -d --entitlements :- "\(appPath)"
+        let decoded = try ShellExecutor.runWithOutput("""
+        security cms -D -i "\(profileURL.path)"
         """)
         
-        guard let data = result.output.data(using: .utf8) else {
+        guard let data = decoded.output.data(using: .utf8) else {
             throw IPASignCraftError.entitlementExtractionFailed
         }
         
-        let plist = try PropertyListSerialization.propertyList(
-            from: data,
-            options: [],
-            format: nil
-        )
+        let plist = try PropertyListSerialization.propertyList(from: data, format: nil)
         
+        guard
+            let dict = plist as? [String: Any],
+            let entitlements = dict["Entitlements"] as? [String: Any]
+        else {
+            throw IPASignCraftError.entitlementExtractionFailed
+        }
+        
+        return entitlements
+    }
+    
+    /// Extracts currently embedded entitlements from original app binary.
+    static func extractAppEntitlements(from appURL: URL) throws -> [String: Any] {
+        
+        let result = try ShellExecutor.runWithOutput("""
+        /usr/bin/codesign -d --entitlements :- "\(appURL.path)"
+        """)
+        
+        guard let data = result.output.data(using: .utf8) else {
+            return [:]
+        }
+        
+        let plist = try? PropertyListSerialization.propertyList(from: data, format: nil)
         return plist as? [String: Any] ?? [:]
     }
 }
 
 private extension EntitlementService {
+    
     static func convertToModel(
         _ raw: [String: Any]
     ) -> [String: EntitlementValue] {
-        
         raw.compactMapValues {
             EntitlementValue.from(any: $0)
         }
@@ -73,48 +105,89 @@ private extension EntitlementService {
 }
 
 private extension EntitlementService {
-    static func merge(
-        base: [String: EntitlementValue],
-        updates: [String: EntitlementValue]
+    
+    /// Merges only non-protected feature entitlements from original app.
+    /// Apple identity-critical keys are always preserved from provisioning profile.
+    static func mergeSafeAppEntitlements(
+        profileBase: [String: EntitlementValue],
+        appExisting: [String: EntitlementValue]
     ) -> [String: EntitlementValue] {
         
-        var result = base
+        var result = profileBase
         
-        for (key, newValue) in updates {
+        for (key, value) in appExisting {
             
-            if case .array(let newArray) = newValue,
-               case .array(let existingArray)? = result[key] {
+            // Never allow original app to overwrite protected signing identity keys
+            if protectedKeys.contains(key) {
+                continue
+            }
+            
+            // If profile does not contain this feature entitlement, preserve app capability
+            if result[key] == nil {
+                result[key] = value
+                continue
+            }
+            
+            // Merge arrays without duplicates
+            if case .array(let oldArray)? = result[key],
+               case .array(let newArray) = value {
                 
-                let combined = existingArray + newArray
-                result[key] = .array(removeDuplicates(combined))
-                
-            } else {
-                result[key] = newValue
+                result[key] = .array(removeDuplicates(oldArray + newArray))
             }
         }
         
         return result
     }
     
-    static func removeDuplicates(
-        _ array: [EntitlementValue]
-    ) -> [EntitlementValue] {
+    /// Applies user manual overrides after all automatic merging.
+    static func mergeUserUpdates(
+        base: [String: EntitlementValue],
+        updates: [String: EntitlementValue]
+    ) -> [String: EntitlementValue] {
         
+        var result = base
+        
+        for (key, value) in updates {
+            if case .array(let oldArray)? = result[key],
+               case .array(let newArray) = value {
+                
+                result[key] = .array(removeDuplicates(oldArray + newArray))
+            } else {
+                result[key] = value
+            }
+        }
+        
+        return result
+    }
+    
+    static func removeDuplicates(_ array: [EntitlementValue]) -> [EntitlementValue] {
         var seen = Set<String>()
         
         return array.filter {
-            let key = "\($0)"
-            if seen.contains(key) { return false }
-            seen.insert(key)
+            let token = "\($0)"
+            if seen.contains(token) { return false }
+            seen.insert(token)
             return true
         }
     }
 }
 
 private extension EntitlementService {
+    
+    /// These keys define Apple signing identity and must come only from provisioning profile.
+    static let protectedKeys: Set<String> = [
+        "application-identifier",
+        "com.apple.developer.team-identifier",
+        "keychain-access-groups",
+        "get-task-allow",
+        "aps-environment"
+    ]
+}
+
+private extension EntitlementService {
     static func write(
         _ plist: [String: Any],
-        to path: String
+        to url: URL
     ) throws {
         
         let data = try PropertyListSerialization.data(
@@ -123,6 +196,6 @@ private extension EntitlementService {
             options: 0
         )
         
-        try data.write(to: URL(fileURLWithPath: path))
+        try data.write(to: url)
     }
 }

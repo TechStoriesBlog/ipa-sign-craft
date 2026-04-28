@@ -34,9 +34,6 @@ struct HomeState {
     
     // MARK: - Advanced Options
     
-    /// Enable Info.plist modification
-    var enablePlistEditing: Bool = false
-    
     /// Enable Entitlement modification
     var enableEntitlementEditing: Bool = false
     
@@ -115,15 +112,17 @@ struct HomeState {
 extension SigningStep {
     var title: String {
         switch self {
-        case .idle: return "Idle"
-        case .preparing: return "Start Preparing"
-        case .extracting: return "Extract IPA"
-        case .modifying: return "Modifying IPA"
-        case .embeddingProfile: return "Embed Profile"
-        case .removeOldSign: return "Remove Old Sign"
-        case .applyingCert: return "Apply Certificate"
-        case .signing: return "Code Sign"
-        case .repackaging: return "Repackage IPA"
+        case .idle: return "Waiting"
+        case .preparing: return "Preparing Workspace"
+        case .extracting: return "Extracting IPA"
+        case .modifying: return "Applying Modifications"
+        case .embeddingProfile: return "Embedding Provisioning Profile"
+        case .removeOldSign: return "Removing Existing Signatures"
+        case .resolvingIdentity: return "Loading Signing Certificate"
+        case .signingFrameworks: return "Signing Internal Components"
+        case .signingMainBundle: return "Signing Application Bundle"
+        case .verifying: return "Verifying Signature"
+        case .repackaging: return "Repackaging IPA"
         case .completed: return "Completed"
         }
     }
@@ -131,14 +130,14 @@ extension SigningStep {
 
 extension HomeState {
     var progressIndex: Int {
-        guard let index = SigningStep.progressSteps.firstIndex(of: currentStep) else {
+        guard let index = SigningStep.workflow.firstIndex(of: currentStep) else {
             return 0
         }
         return index
     }
     
     var progress: Double {
-        let steps = SigningStep.progressSteps
+        let steps = SigningStep.workflow
         guard let index = steps.firstIndex(of: currentStep) else {
             return 0
         }
@@ -146,31 +145,11 @@ extension HomeState {
     }
 }
 
-extension SigningStep {
-    static var progressSteps: [SigningStep] {
-        [
-            .preparing,
-            .extracting,
-            .modifying,
-            .embeddingProfile,
-            .removeOldSign,
-            .applyingCert,
-            .signing,
-            .repackaging,
-            .completed
-        ]
-    }
-
-    var progressIndex: Int? {
-        Self.progressSteps.firstIndex(of: self)
-    }
-}
-
 extension HomeState {
     func isStepCompleted(_ step: SigningStep) -> Bool {
         guard
-            let currentIndex = SigningStep.progressSteps.firstIndex(of: currentStep),
-            let stepIndex = SigningStep.progressSteps.firstIndex(of: step)
+            let currentIndex = SigningStep.workflow.firstIndex(of: currentStep),
+            let stepIndex = SigningStep.workflow.firstIndex(of: step)
         else {
             return false
         }

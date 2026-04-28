@@ -520,7 +520,7 @@ fileprivate extension HomeView {
                 
                 // Progress bar driven by step index
                 ProgressView(value: viewModel.state.progress).tint(AppColors.accent)
-                ForEach(SigningStep.progressSteps, id: \.self) { step in
+                ForEach(SigningStep.workflow, id: \.self) { step in
                     statusRow(for: step)
                 }
             }

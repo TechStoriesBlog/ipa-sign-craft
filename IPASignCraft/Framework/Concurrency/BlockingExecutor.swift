@@ -9,7 +9,6 @@ import Foundation
 
 
 enum BlockingExecutor {
-    
     private static let queue = DispatchQueue(
         label: "blocking.executor",
         qos: .userInitiated,

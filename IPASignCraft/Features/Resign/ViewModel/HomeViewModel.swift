@@ -150,7 +150,6 @@ class HomeViewModel: ObservableObject {
         
         let signingOptions = SigningOptions(
             newBundleID: self.state.bundleID,
-            modifyPlist: self.state.enablePlistEditing,
             plistEntries: self.state.plistEntries,
             modifyEntitlements: self.state.enableEntitlementEditing,
             entitlementEntries: self.state.entitlementEntries
