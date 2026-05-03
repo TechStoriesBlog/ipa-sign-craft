@@ -10,6 +10,7 @@ class HomeViewModel: ObservableObject {
 
     init() {
         loadSigningIdentity()
+        self.state.log += self.state.currentStep.consoleMessage
     }
 
     // MARK: - Load Certificates
@@ -167,6 +168,7 @@ class HomeViewModel: ObservableObject {
                 ) { step in
                     Task { @MainActor in
                         self.state.currentStep = step
+                        self.state.log += "\(step.consoleMessage) \n"
                     }
                 }
 
@@ -233,5 +235,7 @@ fileprivate extension HomeViewModel {
     func resetState() {
         self.state.isSigning = false
         self.state.currentStep = .idle
+        self.state.log = ""
+        self.state.log += self.state.currentStep.consoleMessage
     }
 }

@@ -126,6 +126,23 @@ extension SigningStep {
         case .completed: return "Completed"
         }
     }
+    
+    var consoleMessage: String {
+        switch self {
+        case .idle: return "[READY] Waiting for IPA input..."
+        case .preparing: return "[INFO] Workspace prepared"
+        case .extracting: return "[INFO] IPA extracted successfully"
+        case .modifying: return "[INFO] Bundle modifications applied"
+        case .embeddingProfile: return "[INFO] Provisioning profile embedded"
+        case .removeOldSign: return "[INFO] Existing signatures removed"
+        case .resolvingIdentity: return "[INFO] Signing certificate loaded"
+        case .signingFrameworks: return "[INFO] Internal components signed"
+        case .signingMainBundle: return "[INFO] Application bundle signed"
+        case .verifying: return "[INFO] Signature verification passed"
+        case .repackaging: return "[INFO] IPA packaged successfully"
+        case .completed: return "[SUCCESS] IPA re-signed successfully"
+        }
+    }
 }
 
 extension HomeState {

@@ -2,104 +2,125 @@
 ![Platform](https://img.shields.io/badge/platform-macOS-blue)
 ![License](https://img.shields.io/github/license/CodeWorldBlog/ipasigncraft)
 
-# IPASignCraft
+<p align="center">
+  <img src="docs/icon.png" width="120" alt="IPASignCraft Icon">
+</p>
 
+<h1 align="center">IPASignCraft</h1>
+
+<p align="center">
 A lightweight macOS utility to re-sign IPA files with clarity, safety, and control.
+</p>
+
+<p align="center">
+  <a href="https://github.com/CodeWorldBlog/ipasigncraft/releases/latest"><b>⬇ Download Latest Release</b></a>
+</p>
 
 ---
 
-## 🖼️ Preview
+## 🖼️ Application Preview
 
-### Home Screen
-![Home Screen](docs/screens/home.png)
+<p align="center">
+  <img src="docs/screens/home.jpg" width="95%" alt="IPASignCraft Home Screen">
+</p>
 
-### IPA Selection
-![IPA Selection](docs/screens/ipa-selection.png)
-
-### Certificate & Provisioning
-![Signing Setup](docs/screens/signing.png)
-
-### Result
-![Result Screen](docs/screens/result.png)
+<p align="center"><i>Main workspace of IPASignCraft</i></p>
 
 ---
 
-## ✨ Features
+## ✨ Core Features
 
-* Simple IPA loading
-* Certificate (.p12) support
-* Provisioning profile integration
-* Secure temporary keychain signing
-* Clean re-signing workflow
-* Export ready-to-install IPA
+- Clean drag-and-drop IPA loading
+- Apple certificate (.p12) signing support
+- Provisioning profile embedding
+- Temporary isolated keychain signing
+- Bundle identifier and metadata modification
+- Secure export of ready-to-install IPA
+- Real-time signing progress logs
 
 ---
 
-## ⚙️ Secure Re-Signing Workflow
+## 🧩 Detailed Screens
+
+### IPA Selection Workflow
+
+<p align="center">
+  <img src="docs/screens/ipa-selection.png" width="90%" alt="IPA Selection">
+</p>
+
+---
+
+### Certificate & Provisioning Setup
+
+<p align="center">
+  <img src="docs/screens/signing.png" width="90%" alt="Signing Setup">
+</p>
+
+---
+
+### Final Signing Result
+
+<p align="center">
+  <img src="docs/screens/result.png" width="90%" alt="Result">
+</p>
+
+---
+
+## ⚙️ Signing Pipeline
 
 ```mermaid
-flowchart TD
+flowchart LR
 
-    A[Load IPA File] --> B[Extract Payload Workspace]
-    B --> C[Apply Bundle / Plist Modifications]
-    C --> D[Create Temporary Signing Keychain]
+    subgraph Preparation
+        A[Load IPA] --> B[Extract Workspace] --> C[Apply Bundle Modifications]
+    end
 
-    D --> E[Import P12 Certificate Securely]
-    E --> F[Resolve Signing Identity SHA1]
-    F --> G[Embed Provisioning Profile]
-    G --> H[Generate Updated Entitlements]
+    subgraph Signing
+        D[Create Temporary Keychain] --> E[Import Signing Certificate] --> F[Embed Provisioning Profile] --> G[Generate Entitlements]
+    end
 
-    H --> I[Remove Existing Signatures]
-    I --> J[Sign Frameworks / Dylibs / Extensions]
-    J --> K[Sign Main Application Bundle]
+    subgraph Finalization
+        H[Remove Existing Signatures] --> I[Sign Frameworks & App Bundle] --> J[Verify Signature] --> K[Repackage Payload] --> L[Export Resigned IPA]
+    end
 
-    K --> L[Verify Signed Bundle]
-    L --> M[Repackage Payload to IPA]
-
-    M --> N[Restore Original Keychain Session]
-    N --> O[Delete Temporary Signing Keychain]
-    O --> P[Export Resigned IPA]
+    C --> D
+    G --> H
 ```
-
----
-
-## ⬇️ Download
-
-👉 **[Download Latest Version](https://github.com/CodeWorldBlog/ipasigncraft/releases/latest)**
 
 ---
 
 ## ⚡ Quick Start
 
-1. Open IPASignCraft
-2. Load your IPA
-3. Select certificate and provisioning profile
-4. Apply desired signing options
-5. Click **Re-sign**
-6. Export the newly signed IPA
+1. Launch IPASignCraft
+2. Load target IPA file
+3. Select provisioning profile
+4. Choose signing certificate (.p12 or keychain)
+5. Configure optional bundle modifications
+6. Start secure re-sign process
+7. Export signed IPA
 
 ---
 
 ## 🧰 Requirements
 
-* macOS 12+
-* Apple Developer Certificate (.p12)
-* Provisioning Profile (.mobileprovision)
+- macOS 12.0+
+- Apple Developer Certificate (.p12) or local keychain certificate
+- Valid Provisioning Profile (.mobileprovision)
 
 ---
 
-## 🔒 Security Approach
+## 🔒 Security Philosophy
 
-IPASignCraft uses an isolated temporary signing keychain during the re-sign process.
+IPASignCraft performs the signing process inside an isolated temporary macOS keychain session.
 
-This means:
+This ensures:
 
-* No permanent certificate import into Login Keychain
-* No System Keychain modification
-* No persistent signing identity left on macOS
-* Temporary signing artifacts are removed automatically after completion
+- No permanent certificate import into Login Keychain
+- No modification of System Keychain
+- No long-lived signing identity left on the machine
+- Temporary signing artifacts are removed automatically after completion
 
-Designed to keep the host machine clean while maintaining a stable Apple signing workflow.
+A cleaner and safer workflow for Apple code-signing operations.
 
 ---
 
@@ -116,6 +137,12 @@ IPASignCraft/
 
 ---
 
+## ⬇️ Download
+
+**[Download Latest Version](https://github.com/CodeWorldBlog/ipasigncraft/releases/latest)**
+
+---
+
 ## 📜 License
 
 MIT License
@@ -124,12 +151,12 @@ MIT License
 
 ## 🤝 Contributing
 
-Open to improvements, ideas, and refinements.
+Ideas, refinements, and pull requests are welcome.
 
 ---
 
 ## 🔍 Notes
 
-* Designed for development and internal testing workflows
-* Follows Apple code-signing mechanisms
-* Does not bypass Apple platform security restrictions
+- Built for development and internal testing workflows
+- Uses Apple's standard code-signing mechanisms
+- Does not bypass Apple platform security enforcement

@@ -58,7 +58,9 @@ private extension HomeView {
                 certificateSection
                 actionSection
             }
-            .padding(Spacing.xxl)
+            .padding(.vertical, Spacing.base)
+            .padding(.leading, Spacing.base)
+            .padding(.trailing, Spacing.xxl)
             .frame(maxWidth: 720)
         }
     }
@@ -429,7 +431,6 @@ private extension HomeView {
                 .tint(AppColors.accent)
                 .frame(maxWidth: 320) // keeps it compact (macOS style)
                 .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.bottom, 4)
                 
                 // MARK: - Content
                 Group {
@@ -440,7 +441,7 @@ private extension HomeView {
                         savedCertificateView
                             .transition(.opacity.combined(with: .move(edge: .top)))
                     }
-                }
+                }.frame(maxWidth: .infinity)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
