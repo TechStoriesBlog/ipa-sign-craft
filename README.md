@@ -3,7 +3,7 @@
 ![License](https://img.shields.io/github/license/CodeWorldBlog/ipasigncraft)
 
 <p align="center">
-  <img src="docs/icon.png" width="120" alt="IPASignCraft Icon">
+  <img src="docs/screens/icon.png" width="120" alt="IPASignCraft Icon">
 </p>
 
 <h1 align="center">IPASignCraft</h1>
@@ -70,37 +70,53 @@ A lightweight macOS utility to re-sign IPA files with clarity, safety, and contr
 
 ```mermaid
 flowchart TB
-
-    subgraph Preparation["Preparation Phase"]
+    %% Phase 1: Preparation
+    subgraph Preparation ["<b>1. PREPARATION PHASE</b>"]
         direction LR
-        A[📦 Load IPA Archive] --> B[📂 Extract Payload Workspace] --> C[🛠 Apply Bundle Modifications]
+        A("📦 <b>Load</b><br/>IPA Archive") 
+        B("📂 <b>Extract</b><br/>Workspace") 
+        C("🛠 <b>Modify</b><br/>Bundle")
+        A --> B --> C
     end
 
-    subgraph Signing["Signing Phase"]
+    %% Phase 2: Signing
+    subgraph Signing ["<b>2. SIGNING PHASE</b>"]
         direction LR
-        D[🔐 Create Temporary Keychain] --> E[📜 Import Signing Certificate] --> F[📎 Embed Provisioning Profile] --> G[⚙️ Generate Entitlements]
+        D("🔐 <b>Create Temporary Keychain</b><br/>Setup") 
+        E("📜 <b>Cert</b><br/>Import") 
+        F("📎 <b>Profile</b><br/>Embed") 
+        G("⚙️ <b>Entitlements</b><br/>Gen")
+        D --> E --> F --> G
     end
 
-    subgraph Finalization["Finalization Phase"]
+    %% Phase 3: Finalization
+    subgraph Finalization ["<b>3. FINALIZATION PHASE</b>"]
         direction LR
-        H[🧹 Remove Existing Signatures] --> I[✍️ Sign Frameworks & App Bundle] --> J[✅ Verify Signature Integrity] --> K[📦 Repackage Payload] --> L[🚀 Export Resigned IPA]
+        H("🧹 <b>Clean</b><br/>Signatures") 
+        I("✍️ <b>Sign</b><br/>Bundles") 
+        J("✅ <b>Verify</b><br/>Integrity") 
+        K("📦 <b>Pack</b><br/>Payload") 
+        L("🚀 <b>Export</b><br/>IPA")
+        H --> I --> J --> K --> L
     end
 
-    C --> MID1(( ))
-    MID1 --> D
+    %% Phase Transitions
+    Preparation ==> Signing
+    Signing ==> Finalization
 
-    G --> MID2(( ))
-    MID2 --> H
-
-    classDef prep fill:#eef7ff,stroke:#4a90e2,stroke-width:1.5px;
-    classDef sign fill:#f4f9ee,stroke:#7cb342,stroke-width:1.5px;
-    classDef final fill:#fff6ea,stroke:#fb8c00,stroke-width:1.5px;
-    classDef mid fill:none,stroke:none;
+    %% Styling Logic
+    classDef prep fill:#E3F2FD,stroke:#2196F3,stroke-width:2px,color:#0D47A1;
+    classDef sign fill:#F1F8E9,stroke:#689F38,stroke-width:2px,color:#1B5E20;
+    classDef final fill:#FFF3E0,stroke:#EF6C00,stroke-width:2px,color:#E65100;
+    
+    %% Style Subgraphs
+    style Preparation fill:#F8FDFF,stroke:#2196F3,stroke-width:3px,stroke-dasharray: 5 5
+    style Signing fill:#FBFFF9,stroke:#689F38,stroke-width:3px,stroke-dasharray: 5 5
+    style Finalization fill:#FFFAF2,stroke:#EF6C00,stroke-width:3px,stroke-dasharray: 5 5
 
     class A,B,C prep;
     class D,E,F,G sign;
     class H,I,J,K,L final;
-    class MID1,MID2 mid;
 ```
 
 ---
