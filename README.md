@@ -45,7 +45,7 @@ A lightweight macOS utility to re-sign IPA files with clarity, safety, and contr
 ### IPA Selection Workflow
 
 <p align="center">
-  <img src="docs/screens/ipa-selection.png" width="90%" alt="IPA Selection">
+  <img src="docs/screens/ipa-selection.jpg" width="90%" alt="IPA Selection">
 </p>
 
 ---
@@ -53,7 +53,7 @@ A lightweight macOS utility to re-sign IPA files with clarity, safety, and contr
 ### Certificate & Provisioning Setup
 
 <p align="center">
-  <img src="docs/screens/signing.png" width="90%" alt="Signing Setup">
+  <img src="docs/screens/signing.jpg" width="90%" alt="Signing Setup">
 </p>
 
 ---
@@ -61,7 +61,7 @@ A lightweight macOS utility to re-sign IPA files with clarity, safety, and contr
 ### Final Signing Result
 
 <p align="center">
-  <img src="docs/screens/result.png" width="90%" alt="Result">
+  <img src="docs/screens/result.jpg" width="90%" alt="Result">
 </p>
 
 ---
@@ -69,22 +69,38 @@ A lightweight macOS utility to re-sign IPA files with clarity, safety, and contr
 ## ⚙️ Signing Pipeline
 
 ```mermaid
-flowchart LR
+flowchart TB
 
-    subgraph Preparation
-        A[Load IPA] --> B[Extract Workspace] --> C[Apply Bundle Modifications]
+    subgraph Preparation["Preparation Phase"]
+        direction LR
+        A[📦 Load IPA Archive] --> B[📂 Extract Payload Workspace] --> C[🛠 Apply Bundle Modifications]
     end
 
-    subgraph Signing
-        D[Create Temporary Keychain] --> E[Import Signing Certificate] --> F[Embed Provisioning Profile] --> G[Generate Entitlements]
+    subgraph Signing["Signing Phase"]
+        direction LR
+        D[🔐 Create Temporary Keychain] --> E[📜 Import Signing Certificate] --> F[📎 Embed Provisioning Profile] --> G[⚙️ Generate Entitlements]
     end
 
-    subgraph Finalization
-        H[Remove Existing Signatures] --> I[Sign Frameworks & App Bundle] --> J[Verify Signature] --> K[Repackage Payload] --> L[Export Resigned IPA]
+    subgraph Finalization["Finalization Phase"]
+        direction LR
+        H[🧹 Remove Existing Signatures] --> I[✍️ Sign Frameworks & App Bundle] --> J[✅ Verify Signature Integrity] --> K[📦 Repackage Payload] --> L[🚀 Export Resigned IPA]
     end
 
-    C --> D
-    G --> H
+    C --> MID1(( ))
+    MID1 --> D
+
+    G --> MID2(( ))
+    MID2 --> H
+
+    classDef prep fill:#eef7ff,stroke:#4a90e2,stroke-width:1.5px;
+    classDef sign fill:#f4f9ee,stroke:#7cb342,stroke-width:1.5px;
+    classDef final fill:#fff6ea,stroke:#fb8c00,stroke-width:1.5px;
+    classDef mid fill:none,stroke:none;
+
+    class A,B,C prep;
+    class D,E,F,G sign;
+    class H,I,J,K,L final;
+    class MID1,MID2 mid;
 ```
 
 ---

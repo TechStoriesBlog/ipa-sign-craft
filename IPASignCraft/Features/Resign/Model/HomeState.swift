@@ -112,7 +112,7 @@ struct HomeState {
 extension SigningStep {
     var title: String {
         switch self {
-        case .idle: return "Waiting"
+        case .idle: return "Initialized"
         case .preparing: return "Preparing Workspace"
         case .extracting: return "Extracting IPA"
         case .modifying: return "Applying Modifications"
@@ -129,7 +129,7 @@ extension SigningStep {
     
     var consoleMessage: String {
         switch self {
-        case .idle: return "[READY] Waiting for IPA input..."
+        case .idle: return "[READY] IPASignCraft initialized"
         case .preparing: return "[INFO] Workspace prepared"
         case .extracting: return "[INFO] IPA extracted successfully"
         case .modifying: return "[INFO] Bundle modifications applied"

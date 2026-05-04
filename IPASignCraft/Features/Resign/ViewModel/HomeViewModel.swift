@@ -59,11 +59,13 @@ class HomeViewModel: ObservableObject {
 
     // MARK: - Update Inputs
     func updateIPAPath(_ path: String) {
+        state.log += "\n[READY] IPA package loaded\n"
         let ipaURL = URL(fileURLWithPath: path)
         state.ipaURL = ipaURL
     }
 
     func updateProfilePath(_ path: String) {
+        state.log += "[READY] Provisioning profile loaded\n"
         let profileURL = URL(fileURLWithPath: path)
         state.profileURL = profileURL
         if let bundleID = self.bundleIdentifier(forProfileAtPath: path) {

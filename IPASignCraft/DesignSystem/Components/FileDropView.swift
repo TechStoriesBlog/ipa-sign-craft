@@ -50,7 +50,7 @@ struct FileDropView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     } else {
-                        Text((filePath as NSString).lastPathComponent)
+                        Text("IPA package loaded successfully")
                             .font(.caption)
                             .lineLimit(1)
                     }
