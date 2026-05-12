@@ -1,6 +1,7 @@
 ![Latest Release](https://img.shields.io/github/v/release/CodeWorldBlog/ipasigncraft)
 ![Platform](https://img.shields.io/badge/platform-macOS-blue)
 ![License](https://img.shields.io/github/license/CodeWorldBlog/ipasigncraft)
+![Status](https://img.shields.io/badge/status-alpha-orange)
 
 <p align="center">
   <img src="docs/screens/icon.png" width="120" alt="IPASignCraft Icon">
@@ -9,22 +10,25 @@
 <h1 align="center">IPASignCraft</h1>
 
 <p align="center">
-A lightweight macOS utility to re-sign IPA files with clarity, safety, and control.
+A lightweight macOS utility to manage and re-sign development IPA packages with clarity, safety, and control.
 </p>
 
 <p align="center">
+  <a href="https://techstories.blog"><b>Tech Stories Blog</b></a> •
   <a href="https://github.com/CodeWorldBlog/ipasigncraft/releases/latest"><b>⬇ Download Latest Release</b></a>
 </p>
 
 ---
 
-## 🖼️ Application Preview
+## 🖼 Application Preview
 
 <p align="center">
   <img src="docs/screens/home.jpg" width="95%" alt="IPASignCraft Home Screen">
 </p>
 
-<p align="center"><i>Main workspace of IPASignCraft</i></p>
+<p align="center">
+  <i>Main workspace of IPASignCraft</i>
+</p>
 
 ---
 
@@ -70,53 +74,39 @@ A lightweight macOS utility to re-sign IPA files with clarity, safety, and contr
 
 ```mermaid
 flowchart TB
-    %% Phase 1: Preparation
-    subgraph Preparation ["<b>1. PREPARATION PHASE</b>"]
+
+    %% Phase 1
+    subgraph Preparation ["1. PREPARATION"]
         direction LR
-        A("📦 <b>Load</b><br/>IPA Archive") 
-        B("📂 <b>Extract</b><br/>Workspace") 
-        C("🛠 <b>Modify</b><br/>Bundle")
+        A["📦 Load IPA"]
+        B["📂 Extract Payload"]
+        C["🛠 Modify Bundle"]
         A --> B --> C
     end
 
-    %% Phase 2: Signing
-    subgraph Signing ["<b>2. SIGNING PHASE</b>"]
+    %% Phase 2
+    subgraph Signing ["2. SIGNING"]
         direction LR
-        D("🔐 <b>Create Temporary Keychain</b><br/>Setup") 
-        E("📜 <b>Cert</b><br/>Import") 
-        F("📎 <b>Profile</b><br/>Embed") 
-        G("⚙️ <b>Entitlements</b><br/>Gen")
+        D["🔐 Temporary Keychain"]
+        E["📜 Import Certificate"]
+        F["📎 Embed Provision"]
+        G["⚙️ Generate Entitlements"]
         D --> E --> F --> G
     end
 
-    %% Phase 3: Finalization
-    subgraph Finalization ["<b>3. FINALIZATION PHASE</b>"]
+    %% Phase 3
+    subgraph Finalization ["3. FINALIZATION"]
         direction LR
-        H("🧹 <b>Clean</b><br/>Signatures") 
-        I("✍️ <b>Sign</b><br/>Bundles") 
-        J("✅ <b>Verify</b><br/>Integrity") 
-        K("📦 <b>Pack</b><br/>Payload") 
-        L("🚀 <b>Export</b><br/>IPA")
+        H["🧹 Clean Signatures"]
+        I["✍️ Re-sign App"]
+        J["✅ Verify Integrity"]
+        K["📦 Repackage IPA"]
+        L["🚀 Export"]
         H --> I --> J --> K --> L
     end
 
-    %% Phase Transitions
     Preparation ==> Signing
     Signing ==> Finalization
-
-    %% Styling Logic
-    classDef prep fill:#E3F2FD,stroke:#2196F3,stroke-width:2px,color:#0D47A1;
-    classDef sign fill:#F1F8E9,stroke:#689F38,stroke-width:2px,color:#1B5E20;
-    classDef final fill:#FFF3E0,stroke:#EF6C00,stroke-width:2px,color:#E65100;
-    
-    %% Style Subgraphs
-    style Preparation fill:#F8FDFF,stroke:#2196F3,stroke-width:3px,stroke-dasharray: 5 5
-    style Signing fill:#FBFFF9,stroke:#689F38,stroke-width:3px,stroke-dasharray: 5 5
-    style Finalization fill:#FFFAF2,stroke:#EF6C00,stroke-width:3px,stroke-dasharray: 5 5
-
-    class A,B,C prep;
-    class D,E,F,G sign;
-    class H,I,J,K,L final;
 ```
 
 ---
@@ -128,16 +118,63 @@ flowchart TB
 3. Select provisioning profile
 4. Choose signing certificate (.p12 or keychain)
 5. Configure optional bundle modifications
-6. Start secure re-sign process
+6. Start signing process
 7. Export signed IPA
+
+---
+
+## 🛡 macOS Security Notice
+
+Because IPASignCraft is currently distributed as an open-source unsigned build, macOS may display a security warning during first launch.
+
+To open:
+
+1. Right-click the app
+2. Select "Open"
+3. Confirm the dialog
+
+You may also need:
+
+```text
+System Settings → Privacy & Security → Open Anyway
+```
+
+---
+
+## 💻 Supported Platforms
+
+- macOS Apple Silicon
+- macOS Intel
 
 ---
 
 ## 🧰 Requirements
 
 - macOS 12.0+
+- Xcode Command Line Tools
 - Apple Developer Certificate (.p12) or local keychain certificate
 - Valid Provisioning Profile (.mobileprovision)
+
+---
+
+## 🏗 Build From Source
+
+```bash
+git clone https://github.com/CodeWorldBlog/ipasigncraft.git
+cd ipasigncraft
+open IPASignCraft.xcodeproj
+```
+
+Build using Xcode 16+.
+
+---
+
+## 🧱 Built With
+
+- Swift
+- SwiftUI
+- Security.framework
+- Apple's standard codesign tooling
 
 ---
 
@@ -153,6 +190,14 @@ This ensures:
 - Temporary signing artifacts are removed automatically after completion
 
 A cleaner and safer workflow for Apple code-signing operations.
+
+---
+
+## 🔐 Certificate Handling
+
+IPASignCraft never ships with certificates or provisioning profiles.
+
+Users must provide their own Apple development assets locally during the signing process.
 
 ---
 
@@ -175,15 +220,17 @@ IPASignCraft/
 
 ---
 
-## 📜 License
-
-MIT License
-
----
-
 ## 🤝 Contributing
 
 Ideas, refinements, and pull requests are welcome.
+
+Please open an issue before major architectural or workflow changes.
+
+---
+
+## 📜 License
+
+MIT License
 
 ---
 
@@ -192,3 +239,4 @@ Ideas, refinements, and pull requests are welcome.
 - Built for development and internal testing workflows
 - Uses Apple's standard code-signing mechanisms
 - Does not bypass Apple platform security enforcement
+- Designed for transparency and local control
